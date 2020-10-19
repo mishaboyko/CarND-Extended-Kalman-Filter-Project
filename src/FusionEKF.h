@@ -40,10 +40,19 @@ class FusionEKF {
 
   // tool object used to compute Jacobian and RMSE
   Tools tools;
-  Eigen::MatrixXd R_laser_;
-  Eigen::MatrixXd R_radar_;
-  Eigen::MatrixXd H_laser_;
-  Eigen::MatrixXd Hj_;
+
+  Eigen::VectorXd x_init_;      // object mean state vector
+  Eigen::MatrixXd P_init_;      // object covariance matrix
+  Eigen::MatrixXd F_init_laser_;// state transition matrix
+  Eigen::MatrixXd R_laser_;     // meaurement noise covariance matrix for laser
+  Eigen::MatrixXd R_radar_;     // meaurement noise covariance matrix for radar
+  Eigen::MatrixXd H_laser_;     // meaurement matrix for laser
+  Eigen::MatrixXd Hj_;          // meaurement Jacobian function for radar
+  Eigen::MatrixXd Q_init;           // process covariance matrix
+
+
+  float noise_ax;
+  float noise_ay;
 };
 
 #endif // FusionEKF_H_

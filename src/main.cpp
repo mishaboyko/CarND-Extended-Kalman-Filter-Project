@@ -30,6 +30,7 @@ string hasData(string s) {
 }
 
 int main() {
+
   uWS::Hub h;
 
   // Create a Kalman Filter instance
@@ -102,15 +103,15 @@ int main() {
 
           VectorXd gt_values(4);
           gt_values(0) = x_gt;
-          gt_values(1) = y_gt; 
+          gt_values(1) = y_gt;
           gt_values(2) = vx_gt;
           gt_values(3) = vy_gt;
           ground_truth.push_back(gt_values);
-          
-          // Call ProcessMeasurement(meas_package) for Kalman filter
-          fusionEKF.ProcessMeasurement(meas_package);       
 
-          // Push the current estimated x,y positon from the Kalman filter's 
+          // Call ProcessMeasurement(meas_package) for Kalman filter
+          fusionEKF.ProcessMeasurement(meas_package);
+
+          // Push the current estimated x,y positon from the Kalman filter's
           //   state vector
 
           VectorXd estimate(4);
@@ -124,10 +125,12 @@ int main() {
           estimate(1) = p_y;
           estimate(2) = v1;
           estimate(3) = v2;
-        
+
           estimations.push_back(estimate);
 
           VectorXd RMSE = tools.CalculateRMSE(estimations, ground_truth);
+
+          cout << "RMSE:\t" << RMSE << endl;
 
           json msgJson;
           msgJson["estimate_x"] = p_x;
@@ -154,7 +157,7 @@ int main() {
     std::cout << "Connected!!!" << std::endl;
   });
 
-  h.onDisconnection([&h](uWS::WebSocket<uWS::SERVER> ws, int code, 
+  h.onDisconnection([&h](uWS::WebSocket<uWS::SERVER> ws, int code,
                          char *message, size_t length) {
     ws.close();
     std::cout << "Disconnected" << std::endl;
@@ -167,6 +170,6 @@ int main() {
     std::cerr << "Failed to listen to port" << std::endl;
     return -1;
   }
-  
+
   h.run();
 }

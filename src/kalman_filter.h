@@ -52,17 +52,17 @@ class KalmanFilter {
   // state covariance matrix
   Eigen::MatrixXd P_;
 
-  // state transition matrix
-  Eigen::MatrixXd F_;
+  // state transition matrix for the laser
+  Eigen::MatrixXd F_laser;
 
   // process covariance matrix
   Eigen::MatrixXd Q_;
 
-  // measurement matrix
-  Eigen::MatrixXd H_;
+  // measurement matrix for the laser
+  Eigen::MatrixXd H_laser;
 
-  // measurement covariance matrix
-  Eigen::MatrixXd R_;
+  // measurement covariance matrix for the laser noise
+  Eigen::MatrixXd R_laser;
 };
 
 #endif // KALMAN_FILTER_H_
