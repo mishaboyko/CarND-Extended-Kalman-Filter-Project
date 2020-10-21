@@ -81,8 +81,11 @@ int main() {
           } else if (sensor_type.compare("R") == 0) {
             meas_package.sensor_type_ = MeasurementPackage::RADAR;
             meas_package.raw_measurements_ = VectorXd(3);
+            // Range (rho). Radial distance from origin.
             float ro;
+            // Bearing. Angle between rho and x-axis
             float theta;
+            // radial velocity. Change of rho (range rate)
             float ro_dot;
             iss >> ro;
             iss >> theta;
@@ -130,7 +133,9 @@ int main() {
 
           VectorXd RMSE = tools.CalculateRMSE(estimations, ground_truth);
 
-          cout << "RMSE:\t" << RMSE << endl;
+          Eigen::IOFormat CleanVector(Eigen::StreamPrecision, Eigen::DontAlignCols, ", ", "; ", "", "", "", ";");
+
+          cout << "\nRMSE:\n" << "(" << RMSE.format(CleanVector) << ")" << endl;
 
           json msgJson;
           msgJson["estimate_x"] = p_x;

@@ -30,6 +30,11 @@ class Tools {
    */
   Eigen::MatrixXd CalculateJacobian(const Eigen::VectorXd& x_state);
 
+  /**
+   * A helper method to convert measurement Vector 
+   * from cartesian (4D) to polar (3D) coordinate systems.
+   */
+  Eigen::VectorXd CartesianToPolar(const Eigen::VectorXd& x_state);
 };
 
 #endif  // TOOLS_H_
