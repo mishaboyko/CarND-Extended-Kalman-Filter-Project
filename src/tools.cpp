@@ -20,7 +20,7 @@ VectorXd Tools::CalculateRMSE(const vector<VectorXd> &estimations,
    
    if (estimations.size() != ground_truth.size() || estimations.size() == 0 || ground_truth.size() == 0) {
       cout << "Invalid matrices of estimation or the ground truth data" << endl;
-      return rmse;
+      exit(1);
    }
 
    // sum up all square residuals
@@ -77,11 +77,11 @@ MatrixXd Tools::CalculateJacobian(const VectorXd& x_state) {
 }
 
 VectorXd Tools::CartesianToPolar(const VectorXd& x_state) {
-   // Range (rho). Radial distance from origin.
+   // Range (rho). Radial distance from origin
    float ro;
    // Bearing. Angle between rho and x-axis
    float theta;
-   // radial velocity. Change of rho (range rate)
+   // radial velocity (moving towards or away from the sensor). Change of rho (range rate)
    float ro_dot;
 
    // recover state parameters
@@ -89,18 +89,6 @@ VectorXd Tools::CartesianToPolar(const VectorXd& x_state) {
    float py = x_state(1);
    float vx = x_state(2);
    float vy = x_state(3);
-
-   /** 
-                                                                       
-   TODO:
-   One other important point when calculating $y$ with radar sensor data: 
-   the second value in the polar coordinate vector is the angle $\phi$. 
-   You'll need to make sure to normalize $\phi$ in the $y$ vector 
-   so that its angle is between $-\pi$ and $\pi$; in other words, 
-   add or subtract $2\pi$ from $\phi$ until it is between $-\pi$ and $\pi$.
-   
-   
-   */
 
    ro = sqrt(px*px+py*py);
    theta = atan2(py, px);

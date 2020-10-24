@@ -12,15 +12,27 @@ KalmanFilter::KalmanFilter() {}
 
 KalmanFilter::~KalmanFilter() {}
 
-void KalmanFilter::Init(VectorXd &x_in, MatrixXd &P_in, MatrixXd &F_in,
-                        MatrixXd &H_in, MatrixXd &R_laser_in, MatrixXd &R_radar_in, MatrixXd &Q_in) {
-  x_ = x_in;
+void KalmanFilter::Init(MatrixXd &P_in, MatrixXd &F_in,
+                        MatrixXd &H_in, MatrixXd &R_laser_in, MatrixXd &R_radar_in) {
+  SetInitValues();
+
   P_ = P_in;
   F_ = F_in;
   H_laser = H_in;
   R_laser = R_laser_in;
   R_radar = R_radar_in;
-  Q_ = Q_in;
+}
+
+void KalmanFilter::SetInitValues(){
+  x_ = VectorXd(4);
+  x_ << 0, 0, 0, 0;
+
+  Q_ = MatrixXd(4, 4);
+  Q_ << 0, 0, 0, 0,
+        0, 0, 0, 0,
+        0, 0, 0, 0,
+        0, 0, 0, 0;
+
 }
 
 void KalmanFilter::Predict() {
@@ -28,44 +40,40 @@ void KalmanFilter::Predict() {
   P_ = F_ * P_ * F_.transpose() + Q_;
 }
 
-void KalmanFilter::Update(const VectorXd &z) {
+void KalmanFilter::UpdateLaser(const VectorXd &z) {
 
-  Eigen::VectorXd y = z - H_laser * x_; // where H_ * x_ == predicted z (z_pred)
-  Eigen::MatrixXd S = H_laser * P_ * H_laser.transpose() + R_laser;
-  // Calculate Kalman gain
-  Eigen::MatrixXd K = (P_ * H_laser.transpose()) * S.inverse();
-  // new estimate
-  x_ = x_ + (K * y);
-  MatrixXd ident_matrix = MatrixXd::Identity(x_.size(), x_.size());
-  P_ = (ident_matrix - K * H_laser) * P_;
+  // z and y in cartesian coordinate system
+  Eigen::VectorXd y = z - H_laser * x_; // where H_ * x_ == predicted z
+
+  UpdateCommon(y, H_laser, R_laser);
 }
 
-void KalmanFilter::UpdateEKF(const VectorXd &z) {
+void KalmanFilter::UpdateRadar(const VectorXd &z) {
 
-  // y = z - h(x')
-  Eigen::VectorXd y = z - tools.CartesianToPolar(x_); // where h(x_) == predicted z (z_pred)
+  // z and y in polar coordinate system
+  Eigen::VectorXd y = z - tools.CartesianToPolar(x_); // where h(x') == predicted z
 
   // Normalize theta angles difference
-  if (y(1) > M_PI) {
-    y(1) = y(1) - 2 * M_PI;
+  if (y[1] > M_PI) {
+    y[1] = y[1] - 2 * M_PI;
   }
-  else if (y(1) < -M_PI){
-    y(1) = y(1) + 2 * M_PI;
+  else if (y[1] < -M_PI){
+    y[1] = y[1] + 2 * M_PI;
   }
 
+  // A matrix to convert from polar to cartesian
   H_radar = tools.CalculateJacobian(x_);
 
-  Eigen::MatrixXd S = H_radar * P_ * H_radar.transpose() + R_radar;
-  cout << "s\n" << S << endl;
+  UpdateCommon(y, H_radar, R_radar);
+}
+
+void KalmanFilter::UpdateCommon(Eigen::VectorXd y, Eigen::MatrixXd H, Eigen::MatrixXd R){
+
+  Eigen::MatrixXd S = H * P_ * H.transpose() + R;
   // Calculate Kalman gain
-  Eigen::MatrixXd K = (P_ * H_radar.transpose()) * S.inverse();
+  Eigen::MatrixXd K = (P_ * H.transpose()) * S.inverse();
   // new estimate
   x_ = x_ + (K * y);
   MatrixXd ident_matrix = MatrixXd::Identity(x_.size(), x_.size());
-  P_ = (ident_matrix - K * H_radar) * P_;
-
-
-  /*
-  These three steps (initialize, predict, update) plus calculating RMSE encapsulate the entire extended Kalman filter project.
-  */
+  P_ = (ident_matrix - K * H) * P_;
 }

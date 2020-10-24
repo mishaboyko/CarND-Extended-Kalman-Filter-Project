@@ -17,36 +17,34 @@ class KalmanFilter {
 
   /**
    * Init Initializes Kalman filter
-   * @param x_in Initial state
    * @param P_in Initial state covariance
    * @param F_in Transition matrix
    * @param H_in Measurement matrix
    * @param R_in Measurement covariance matrix
    * @param Q_in Process covariance matrix
    */
-  void Init(Eigen::VectorXd &x_in, Eigen::MatrixXd &P_in, Eigen::MatrixXd &F_in,
-            Eigen::MatrixXd &H_in, Eigen::MatrixXd &R_laser_in, Eigen::MatrixXd &R_radar_in, Eigen::MatrixXd &Q_in);
+  void Init(Eigen::MatrixXd &P_in, Eigen::MatrixXd &F_in,
+            Eigen::MatrixXd &H_in, Eigen::MatrixXd &R_laser_in, Eigen::MatrixXd &R_radar_in);
 
   /**
    * Prediction Predicts the state and the state covariance
    * using the process model
-   * @param delta_T Time between k and k+1 in s
    */
   void Predict();
 
   /**
-   * Updates the state by using standard Kalman Filter equations
+   * Updates the state by using _standard_ Kalman Filter equations
    * @param z The measurement at k+1
    */
-  void Update(const Eigen::VectorXd &z);
+  void UpdateLaser(const Eigen::VectorXd &z);
 
   /**
-   * Updates the state by using Extended Kalman Filter equations
+   * Updates the state by using _Extended_ Kalman Filter equations
    * @param z The measurement at k+1
    */
-  void UpdateEKF(const Eigen::VectorXd &z);
+  void UpdateRadar(const Eigen::VectorXd &z);
 
-  // state vector
+  // object mean state vector
   Eigen::VectorXd x_;
 
   // state covariance matrix
@@ -59,6 +57,13 @@ class KalmanFilter {
   Eigen::MatrixXd Q_;
 
   private:
+
+  // set initial dummy values. These will be overwritten every sensor measurement
+  void SetInitValues();
+
+  // Update variables, which are common for EKF and KF (a.k.a. Radar and Laser measurements)
+  void UpdateCommon(Eigen::VectorXd y, Eigen::MatrixXd H, Eigen::MatrixXd R);
+
   Tools tools;
 
   // measurement matrix for the laser
